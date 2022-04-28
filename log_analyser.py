@@ -45,10 +45,10 @@ def list_files(mypath):
                         file_read_name = line_clean.split(" ")[12]
 
                     if Config.START_PATTERN in line_content:
-                        start_line = line_content.split(" ")[0].strip("[]")[:-4]
+                        start_line = line_content.split(" ")[0].strip("[]") + "000"
 
                     if Config.END_PATTERN in line_content:
-                        end_line = line_content.split(" ")[0].strip("[]")[:-4]
+                        end_line = line_content.split(" ")[0].strip("[]") + "000"
 
                     if Config.ERROR_PATTERN in line_content:
                         error = True
@@ -58,8 +58,10 @@ def list_files(mypath):
                 duration = "error"
                 duration_s = "error"
             else:
-                duration = datetime.strptime(end_line, Config.TIME_DEF) - datetime.strptime(start_line, Config.TIME_DEF)
-                duration_s = duration.seconds
+                deta_start = datetime.strptime(start_line, Config.TIME_DEF)
+                date_end = datetime.strptime(end_line, Config.TIME_DEF)
+                duration = date_end - deta_start
+                duration_s = duration.seconds + round(duration.microseconds/1000000, 1)
 
             file_stat = f"{file_name}, {file_read_name}.json, {component_version}, {duration}, {start_line}"
 
@@ -78,7 +80,7 @@ def list_files(mypath):
 
     with open(Config.TIME_FILE_PATH, mode='w', encoding='utf8') as result_file:
 
-        result_file.write("nb, test, mean, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10\n")
+        result_file.write("nb, mean, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10\n")
 
         for key in sorted(result_dict.keys()):
             time_list = result_dict[key]
@@ -87,7 +89,7 @@ def list_files(mypath):
             else:
                 mean_time = f"{statistics.mean(time_list):0.1f}"
 
-            file_stat = f"{time_list.__len__():02d},       ,{key},{mean_time},{time_list}"
+            file_stat = f"{time_list.__len__():02d},{key},{mean_time},{time_list}"
             logging.info(file_stat)
             result_file.write(file_stat.replace("[", "").replace("]", "").replace("'", "") + "\n")
 
