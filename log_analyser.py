@@ -27,8 +27,11 @@ def list_files(mypath):
         end_line = ""
 
         for file_name in content:
-            if ".log" not in file_name:
+            # Only scan ".log" files
+            if not file_name.endswith(".log"):
                 continue
+
+            # Let get the party started
             complete_path = join(mypath, file_name)
             error = False
 
@@ -36,19 +39,20 @@ def list_files(mypath):
                 while line := file.readline():
                     line_content = (line.rstrip())
 
-                    if Config.VERSION_PATTERN in line_content:
-                        line_split = line_content.split("/")
-                        component_version = line_split[8]
+                    if Config.VERSION_PATTERN[0] in line_content:
 
-                    if Config.NAME_PATTERN in line_content:
-                        line_clean = line_content.replace('/', ' ')
-                        file_read_name = line_clean.split(" ")[12]
+                        line_split = clean_and_split(line_content, Config.VERSION_PATTERN[2])
+                        component_version = line_split[Config.VERSION_PATTERN[1]]
 
-                    if Config.START_PATTERN in line_content:
-                        start_line = line_content.split(" ")[0].strip("[]") + "000"
+                    if Config.NAME_PATTERN[0] in line_content:
+                        line_split = clean_and_split(line_content, Config.NAME_PATTERN[2])
+                        file_read_name = line_split[Config.NAME_PATTERN[1]]
 
-                    if Config.END_PATTERN in line_content:
-                        end_line = line_content.split(" ")[0].strip("[]") + "000"
+                    if Config.START_PATTERN[0] in line_content:
+                        start_line = line_content.split(" ")[0].strip("[]") + Config.START_PATTERN[1]
+
+                    if Config.END_PATTERN[0] in line_content:
+                        end_line = line_content.split(" ")[0].strip("[]") + Config.END_PATTERN[1]
 
                     if Config.ERROR_PATTERN in line_content:
                         error = True
@@ -67,8 +71,10 @@ def list_files(mypath):
 
             if Config.REF == component_version:
                 duration_name = f"{file_read_name}.ref"
-            else:
+            elif Config.PATCHED == component_version:
                 duration_name = f"{file_read_name}.patched"
+            else:
+                duration_name = f"{file_read_name}.unknown"
 
             try:
                 result_dict[duration_name].append(duration_s)
@@ -92,6 +98,16 @@ def list_files(mypath):
             file_stat = f"{time_list.__len__():02d},{key},{mean_time},{time_list}"
             logging.info(file_stat)
             result_file.write(file_stat.replace("[", "").replace("]", "").replace("'", "") + "\n")
+
+
+def clean_and_split(line_content, splitters):
+
+    line_clean = line_content
+
+    for letter in splitters:
+        line_clean = line_clean.replace(letter, ' ')
+
+    return line_clean.split(' ')
 
 
 if __name__ == '__main__':
