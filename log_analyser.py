@@ -22,7 +22,7 @@ def list_files(mypath):
 
     with open(Config.FILE_LIST_PATH, mode='w', encoding='utf8') as result_file:
 
-        result_file.write(" file_name, name, component_version, duration, date\n")
+        result_file.write(" file_name, name, component_version/tck_version, duration, date\n")
         start_line = ""
         end_line = ""
 
@@ -34,19 +34,30 @@ def list_files(mypath):
             # Let get the party started
             complete_path = join(mypath, file_name)
             error = False
+            file_read_name = file_name
 
             with open(complete_path) as file:
                 while line := file.readline():
                     line_content = (line.rstrip())
 
-                    if Config.VERSION_PATTERN[0] in line_content:
+                    if Config.COMPONENT_VERSION_PATTERN[0] in line_content:
 
-                        line_split = clean_and_split(line_content, Config.VERSION_PATTERN[2])
-                        component_version = line_split[Config.VERSION_PATTERN[1]]
+                        line_split = clean_and_split(line_content, Config.COMPONENT_VERSION_PATTERN[2])
+                        component_version = line_split[Config.COMPONENT_VERSION_PATTERN[1]]
 
-                    if Config.NAME_PATTERN[0] in line_content:
-                        line_split = clean_and_split(line_content, Config.NAME_PATTERN[2])
-                        file_read_name = line_split[Config.NAME_PATTERN[1]]
+                    if Config.TCK_VERSION_PATERN[0] in line_content:
+
+                        line_split = clean_and_split(line_content, Config.TCK_VERSION_PATERN[2])
+                        tck_version = line_split[Config.TCK_VERSION_PATERN[1]]
+
+                    try:
+                        if Config.NAME_PATTERN[0] in line_content:
+                            line_split = clean_and_split(line_content, Config.NAME_PATTERN[2])
+                            file_read_name = line_split[Config.NAME_PATTERN[1]]
+                    except TypeError:
+                        # If the NAME_PATTERN is not defined pass
+                        # UGLY...
+                        pass
 
                     if Config.START_PATTERN[0] in line_content:
                         start_line = line_content.split(" ")[0].strip("[]") + Config.START_PATTERN[1]
@@ -67,7 +78,7 @@ def list_files(mypath):
                 duration = date_end - deta_start
                 duration_s = duration.seconds + round(duration.microseconds/1000000, 1)
 
-            file_stat = f"{file_name}, {file_read_name}.json, {component_version}, {duration}, {start_line}"
+            file_stat = f"{file_name}, {file_read_name}.json, {component_version}/{tck_version}, {duration}"
 
             if Config.REF == component_version:
                 duration_name = f"{file_read_name}.ref"

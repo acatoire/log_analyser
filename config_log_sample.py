@@ -21,7 +21,8 @@ class Config:
     # # The second parameter is the id on the spaces splited line
     # # The third parameter the extra char to split (default empty)
     NAME_PATTERN = ("text with name", 12, ["/"])
-    VERSION_PATTERN = ("text for version", 15, ["/", "\\"])
+    COMPONENT_VERSION_PATTERN = ("text for version", 15, ["/", "\\"])
+    TCK_VERSION_PATERN = ("ComponentManager version:", -1, '')
     # # Error detection definition
     ERROR_PATTERN = "error text"
 
